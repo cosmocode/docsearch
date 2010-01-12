@@ -1,0 +1,6 @@
+author  Dominik Eckelmann
+email 	dokuwiki@cosmocode.de
+date 	2010-01-12
+name 	DocSearch
+desc 	Extends the default search and appends a search through uploaded documents files
+url 	http://www.dokuwiki.org/plugin:docsearch
