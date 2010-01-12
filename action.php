@@ -63,6 +63,8 @@ class action_plugin_docsearch extends DokuWiki_Action_Plugin {
 		echo '<h2>'.hsc($this->getLang('title')).'</h2>';
 		echo '<div class="search_result">';
 
+		usort($res, array($this,'_resultSearch'));
+
 		// printout the results
 		foreach ($res as $r) {
 			echo '<a href="'.ml($r['id']).'" title="" class="wikilink1">'.hsc($r['id']).'</a>:';
@@ -73,6 +75,11 @@ class action_plugin_docsearch extends DokuWiki_Action_Plugin {
 			echo '<br />';
 		}
 		echo '</div>';
+	}
+
+	function _resultSearch($a,$b) {
+		if ($a['count'] == $b['count']) return 0;
+		return ($a['count'] > $b['count']) ? -1 : 1;
 	}
 }
 
