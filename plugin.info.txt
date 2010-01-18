@@ -1,3 +1,4 @@
+base    docsearch
 author  Dominik Eckelmann
 email 	dokuwiki@cosmocode.de
 date 	2010-01-12
