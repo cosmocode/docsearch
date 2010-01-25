@@ -21,7 +21,7 @@ class action_plugin_docsearch extends DokuWiki_Action_Plugin {
 	* return some info
 	*/
     function getInfo() {
-        return confToHash(dirname(__FILE__).'/plugin.info.txt');
+        return confToHash(dirname(__FILE__).'/info.txt');
 	}
 
     /**
@@ -59,6 +59,11 @@ class action_plugin_docsearch extends DokuWiki_Action_Plugin {
 
 		// restore the config
 		$conf = $cp;
+
+		// if there no results in the documents we have nothing else to do
+		if (empty($res)) {
+			return;
+		}
 
 		echo '<h2>'.hsc($this->getLang('title')).'</h2>';
 		echo '<div class="search_result">';
