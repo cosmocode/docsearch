@@ -38,6 +38,7 @@ class action_plugin_docsearch extends DokuWiki_Action_Plugin {
 		global $ACT;
 		global $ID;
 		global $conf;
+		global $QUERY;
 
 		// only work with search
 		if ($ACT != 'search') return;
@@ -46,39 +47,40 @@ class action_plugin_docsearch extends DokuWiki_Action_Plugin {
 		$cp = $conf;
 
 		// set the index directory to the docsearch index
-		$conf['index'] = $conf['savedir'] . '/docsearch/index';
+		$conf['indexdir'] = $conf['savedir'] . '/docsearch/index';
 
 		// change the datadir to the docsearch data dir
 		$conf['datadir'] = $conf['savedir'] . '/docsearch/pages';
 
-		// result array
-		$res = array();
-
 		// search the documents
-		search($res,$conf['datadir'],'search_fulltext',array('query'=>$ID));
+		//search($res,$conf['datadir'],'search_fulltext',array('query'=>$ID));
+		$data = ft_pageSearch($QUERY,$regex);
 
 		// restore the config
 		$conf = $cp;
 
 		// if there no results in the documents we have nothing else to do
-		if (empty($res)) {
+		if (empty($data)) {
 			return;
 		}
 
 		echo '<h2>'.hsc($this->getLang('title')).'</h2>';
 		echo '<div class="search_result">';
 
-		usort($res, array($this,'_resultSearch'));
-
 		// printout the results
-		foreach ($res as $r) {
-			echo '<a href="'.ml($r['id']).'" title="" class="wikilink1">'.hsc($r['id']).'</a>:';
-			echo '<span class="search_cnt">'.hsc($r['count']).' '.hsc($this->getLang('hits')).'</span>';
-			echo '<div class="search_snippet">';
-			echo $r['snippet'];
-			echo '</div>';
+		$num = 0;
+		foreach ($data as $id => $hits) {
+			echo '<a href="'.ml($id).'" title="" class="wikilink1">'.hsc($id).'</a>:';
+			echo '<span class="search_cnt">'.hsc($hits).' '.hsc($this->getLang('hits')).'</span>';
+			if ($num < 15) {
+				echo '<div class="search_snippet">';
+				echo ft_snippet($id,$regex);
+				echo '</div>';
+			}
 			echo '<br />';
+			$num ++;
 		}
+
 		echo '</div>';
 	}
 

@@ -73,7 +73,8 @@ function inspect($file) {
 	// prepare folder and pathes
 	$abstract = preg_replace( '/'.str_replace('/','\\/',preg_quote($input)).'/', '', $file, 1);
 	$out      = $output . $abstract . '.txt';
-	$id = str_replace('/',':',$abstract);
+	$out      = $out;
+	$id       = str_replace('/',':',$abstract);
 	io_mkdir_p(dirname($out));
 
 	// prepare command
