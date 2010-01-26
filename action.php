@@ -39,6 +39,7 @@ class action_plugin_docsearch extends DokuWiki_Action_Plugin {
 		global $ID;
 		global $conf;
 		global $QUERY;
+		global $lang;
 
 		// only work with search
 		if ($ACT != 'search') return;
@@ -71,7 +72,7 @@ class action_plugin_docsearch extends DokuWiki_Action_Plugin {
 		$num = 0;
 		foreach ($data as $id => $hits) {
 			echo '<a href="'.ml($id).'" title="" class="wikilink1">'.hsc($id).'</a>:';
-			echo '<span class="search_cnt">'.hsc($hits).' '.hsc($this->getLang('hits')).'</span>';
+			echo '<span class="search_cnt">'.hsc($hits).' '.hsc($lang['hits']).'</span>';
 			if ($num < 15) {
 				echo '<div class="search_snippet">';
 				echo ft_snippet($id,$regex);
