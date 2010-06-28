@@ -3,6 +3,7 @@
  * Script to search in uploaded pdf documents
  *
  * @author Dominik Eckelmann <eckelmann@cosmocode.de>
+ * @author @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  */
 
 if(!defined('DOKU_INC')) die();
