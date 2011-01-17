@@ -86,7 +86,7 @@ function inspect($file) {
 	system( $cmd );
 
 	// add the page to the index
-	$ID = $id;
+	$ID = cleanID($id);
 	idx_addPage($ID);
 
 }
