@@ -1,15 +1,15 @@
+#!/usr/bin/php
 <?php
 
 // ensure that the request comes from the cli
-if ($_SERVER['REMOTE_ADDR']) {
-	die();
-}
+if ('cli' != php_sapi_name()) die();
 
 error_reporting(E_ALL);
 if(!defined('DOKU_INC')) define('DOKU_INC',realpath(dirname(__FILE__).'/../../../').'/');
 
 require_once(DOKU_INC . 'inc/init.php');
 require_once(DOKU_INC . 'inc/common.php');
+require_once DOKU_INC . 'inc/cliopts.php';
 require_once(DOKU_INC . 'inc/indexer.php');
 require_once(DOKU_INC . 'inc/io.php');
 require_once(DOKU_INC . 'inc/confutils.php');
@@ -73,7 +73,6 @@ function inspect($file) {
 	// prepare folder and pathes
 	$abstract = preg_replace( '/'.str_replace('/','\\/',preg_quote($input)).'/', '', $file, 1);
 	$out      = $output . $abstract . '.txt';
-	$out      = $out;
 	$id       = str_replace('/',':',$abstract);
 	io_mkdir_p(dirname($out));
 
@@ -83,7 +82,11 @@ function inspect($file) {
 	$cmd = str_replace('%out%',escapeshellarg($out),$cmd);
 
 
-	system( $cmd );
+	// Run command
+	$ret_val = 0;
+	system($cmd, $ret_val);
+	if ($ret_val!=0) fwrite(STDERR, "Command failed: $cmd\n");
+
 
 	// add the page to the index
 	$ID = cleanID($id);
@@ -143,11 +146,13 @@ foreach (array('conf/dokuwiki.php', 'conf/local.php', 'conf/local.protected.php'
 
 // load the plugin converter settings.
 
-$conf['docsearch'] = confToHash(DOKU_INC.'lib/plugins/docsearch/conf/converter.php');
+$converter_conf = realpath(DOKU_INC.'lib/plugins/docsearch/conf/converter.php');
+$conf['docsearch'] = confToHash($converter_conf);
 
 // no converters == no work ;-)
 if (empty($conf['docsearch'])) {
-	die();
+	fwrite(STDERR, "No converters found in $converter_conf\n");
+	exit(1);
 }
 
 $conf['docsearchext'] = array_keys($conf['docsearch']);
@@ -168,14 +173,23 @@ rmdirr($base.'docsearch');
 $input  = $base . ((isset($conf['mediadir'])) ? $conf['mediadir'] : 'media' );
 $output = $base . 'docsearch/pages';
 $index  = $base . 'docsearch/index';
+$cache  = $base . 'docsearch/cache';
+$meta   = $base . 'docsearch/meta';
+$locks  = $base . 'docsearch/locks';
 
 // create output dir
 io_mkdir_p($output);
 io_mkdir_p($index);
+io_mkdir_p($cache);
+io_mkdir_p($meta);
+io_mkdir_p($locks);
 
 // change the datadir and the indexdir
 $conf['datadir']  = $output;
 $conf['indexdir'] = $index;
+$conf['cachedir'] = $cache;
+$conf['metadir']  = $meta;
+$conf['lockdir']  = $locks;
 
 // walk throu the media dir and search for pdf files
 walk($input);
