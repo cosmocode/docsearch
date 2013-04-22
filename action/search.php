@@ -7,27 +7,15 @@
  */
 
 if(!defined('DOKU_INC')) die();
-if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
-if(!defined('DOKU_DATA')) define('DOKU_DATA',DOKU_INC.'data/');
 
-require_once(DOKU_PLUGIN.'action.php');
-require_once(DOKU_INC . 'inc/fulltext.php');
-
-
-class action_plugin_docsearch extends DokuWiki_Action_Plugin {
+class action_plugin_docsearch_search extends DokuWiki_Action_Plugin {
 
     private $backupConfig;
 
-    /**
-	* Register to the content display event to place the results under it.
-	*/
     function register(Doku_Event_Handler &$controller) {
-        $controller->register_hook('TPL_CONTENT_DISPLAY',   'AFTER', $this, 'display', array());
+        $controller->register_hook('TPL_CONTENT_DISPLAY', 'AFTER', $this, 'display', array());
     }
 
-	/**
-	 * do the search and displays the result
-	 */
 	function display(Doku_Event &$event, $param) {
 		global $ACT;
 		global $conf;
