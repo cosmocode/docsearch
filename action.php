@@ -16,7 +16,7 @@ require_once(DOKU_INC . 'inc/fulltext.php');
 
 class action_plugin_docsearch extends DokuWiki_Action_Plugin {
 
-	var $data = array();
+    private $backupConfig;
 
     /**
 	* Register to the content display event to place the results under it.
@@ -38,7 +38,7 @@ class action_plugin_docsearch extends DokuWiki_Action_Plugin {
 		if ($ACT !== 'search') return;
 
 		// backup the config array
-		$configBackup = $conf;
+		$this->backupConfig = $conf;
 
 		// change index/pages folder for DocSearch
 		$conf['indexdir'] = $conf['savedir'] . '/docsearch/index';
@@ -47,27 +47,54 @@ class action_plugin_docsearch extends DokuWiki_Action_Plugin {
 		$data = ft_pageSearch($QUERY, $regex);
 
 		if (empty($data)) {
-            $conf = $configBackup;
+            $conf = $this->backupConfig;
 			return;
 		}
+
+        $searchResults = array();
+        $runs = 0;
+        foreach ($data as $id => $hits) {
+            $searchResults[$id] = array();
+            $searchResults[$id]['hits'] = $hits;
+            if ($runs < $this->getConf('showSnippets')) {
+                $searchResults[$id]['snippet'] = ft_snippet($id, $regex);
+            }
+        }
+
+        $conf = $this->backupConfig;
+
 		echo '<h2>'.hsc($this->getLang('title')).'</h2>';
 		echo '<div class="search_result">';
 
 		$num = 0;
-		foreach ($data as $id => $hits) {
+		foreach ($searchResults as $id => $data) {
+            if ($this->getConf('showUsage') !== 0) {
+                $usages = ft_mediause($id, $this->getConf('showUsage'));
+            } else {
+                $usages = array();
+            }
+
 			echo '<a href="'.ml($id).'" title="" class="wikilink1">'.hsc($id).'</a>:';
-			echo '<span class="search_cnt">'.hsc($hits).' '.hsc($lang['hits']).'</span>';
-			if ($num < 15) {
+			echo '<span class="search_cnt">'.hsc($data['hits']).' '.hsc($lang['hits']).'</span>';
+            if (!empty($usages)) {
+                echo '<span class="usage">';
+                echo ', Usage: ';
+                foreach ($usages as $usage) {
+                    echo html_wikilink($usage);
+                }
+                echo '</span>';
+            }
+
+			if (isset($data['snippet'])) {
 				echo '<div class="search_snippet">';
-				echo ft_snippet($id, $regex);
+				echo $data['snippet'];
 				echo '</div>';
 			}
+
 			echo '<br />';
 			$num ++;
 		}
 
 		echo '</div>';
-
-        $conf = $configBackup;
 	}
 }
