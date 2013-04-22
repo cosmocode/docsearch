@@ -8,90 +8,85 @@ error_reporting(E_ALL);
 if(!defined('DOKU_INC')) define('DOKU_INC',realpath(dirname(__FILE__).'/../../../').'/');
 
 require_once(DOKU_INC . 'inc/init.php');
-require_once(DOKU_INC . 'inc/common.php');
 require_once DOKU_INC . 'inc/cliopts.php';
-require_once(DOKU_INC . 'inc/indexer.php');
-require_once(DOKU_INC . 'inc/io.php');
-require_once(DOKU_INC . 'inc/confutils.php');
+
 /**
  * Walks recursive through a directory and reports all files to the inspect function
  *
- * @param string $dir the directory to walk through
+ * @param string $dir the folder to walk through
  */
 function walk($dir) {
 
-	// dir not readable
 	if (!is_readable($dir)) return;
-
-	// no dictionary
 	if (!is_dir($dir)) return;
 
 	$handle = opendir($dir);
-
-	// cannot open
 	if (!$handle) return;
 
 	while (false !== ($file = readdir($handle))) {
-		if ($file == '.' || $file == '..') continue; // skip
-		$file = $dir . '/' . $file;
+		if ($file == '.' || $file == '..') continue;
+
+		$file = "$dir/$file";
 		if (is_file($file)) {
 			inspect($file);
-		} elseif (is_dir($file)) {
-			walk($file);
-		}
-	}
+            continue;
+        }
+
+        if (is_dir($file)) {
+            walk($file);
+            continue;
+        }
+    }
 }
 
 /**
- * inspects a file path
+ * Try to convert a given file to text and add it to the DocSearch index
  *
- * if it has a pdf file extension it trys to convert it to text in data/docsearch
+ * @var string $file File to inspect
  */
 function inspect($file) {
-
 	global $input;
 	global $output;
 	global $conf;
 	global $ID;
 
 	// dont handle non pdf files
-	$ext = array();
+	$extension = array();
 
-	preg_match('/.([^\.]*)$/',$file,$ext);
+	preg_match('/.([^\.]*)$/', $file, $extension);
 
 	// no file extension -> woops maybe a TODO ?
-	if (!isset($ext[1])) {
+	if (!isset($extension[1])) {
+		return;
+	}
+    $extension = $extension[1];
+
+	// unknown extension -> return
+	if (!in_array($extension, $conf['docsearchext'])) {
 		return;
 	}
 
-	// unknowen extension -> return
-	if (!in_array($ext[1],$conf['docsearchext'])) {
-		return;
-	}
-
-
-	// prepare folder and pathes
-	$abstract = preg_replace( '/'.str_replace('/','\\/',preg_quote($input)).'/', '', $file, 1);
+	// prepare folder and paths
+    $inputPath = preg_quote($input, '/');
+	$abstract = preg_replace( '/^'.$inputPath.'/', '', $file, 1);
 	$out      = $output . $abstract . '.txt';
-	$id       = str_replace('/',':',$abstract);
+	$id       = str_replace('/', ':', $abstract);
 	io_mkdir_p(dirname($out));
 
 	// prepare command
-	$cmd = $conf['docsearch'][$ext[1]];
-	$cmd = str_replace('%in%',escapeshellarg($file),$cmd);
-	$cmd = str_replace('%out%',escapeshellarg($out),$cmd);
-
+	$cmd = $conf['docsearch'][$extension];
+	$cmd = str_replace('%in%', escapeshellarg($file), $cmd);
+	$cmd = str_replace('%out%', escapeshellarg($out), $cmd);
 
 	// Run command
-	$ret_val = 0;
-	system($cmd, $ret_val);
-	if ($ret_val!=0) fwrite(STDERR, "Command failed: $cmd\n");
+	$exitCode = 0;
+	system($cmd, $exitCode);
+	if ($exitCode != 0) fwrite(STDERR, "Command failed: $cmd\n");
 
 
 	// add the page to the index
 	$ID = cleanID($id);
 	idx_addPage($ID);
-
 }
 
 /**
@@ -138,15 +133,9 @@ function rmdirr($dirname)
 
 $ID = '';
 
-// load the dokuwiki config files
-$conf = array();
-foreach (array('conf/dokuwiki.php', 'conf/local.php', 'conf/local.protected.php') as $inc ) {
-	if (is_file(DOKU_INC . $inc)) include DOKU_INC . $inc;
-}
-
 // load the plugin converter settings.
 
-$converter_conf = realpath(DOKU_INC.'lib/plugins/docsearch/conf/converter.php');
+$converter_conf = DOKU_INC.'lib/plugins/docsearch/conf/converter.php';
 $conf['docsearch'] = confToHash($converter_conf);
 
 // no converters == no work ;-)
@@ -161,7 +150,8 @@ $conf['docsearchext'] = array_keys($conf['docsearch']);
 
 // the base "data" dir
 $base = '';
-if ($conf['savedir'][0] == '.') {
+
+if ($conf['savedir'][0] === '.') {
 	$base = DOKU_INC;
 }
 $base .= $conf['savedir'] . '/';
@@ -170,7 +160,7 @@ $base .= $conf['savedir'] . '/';
 rmdirr($base.'docsearch');
 
 // build the important pathes
-$input  = $base . ((isset($conf['mediadir'])) ? $conf['mediadir'] : 'media' );
+$input  = $conf['mediadir'];
 $output = $base . 'docsearch/pages';
 $index  = $base . 'docsearch/index';
 $cache  = $base . 'docsearch/cache';
@@ -184,14 +174,14 @@ io_mkdir_p($cache);
 io_mkdir_p($meta);
 io_mkdir_p($locks);
 
-// change the datadir and the indexdir
+// change the data folders
 $conf['datadir']  = $output;
 $conf['indexdir'] = $index;
 $conf['cachedir'] = $cache;
 $conf['metadir']  = $meta;
 $conf['lockdir']  = $locks;
 
-// walk throu the media dir and search for pdf files
+// walk through the media dir and search for pdf files
 walk($input);
 
 ?>
