@@ -83,6 +83,12 @@ function inspect($file) {
 	system($cmd, $exitCode);
 	if ($exitCode != 0) fwrite(STDERR, "Command failed: $cmd\n");
 
+    // check file encoding for bad utf8 characters - if a bad thing is found convert assuming latin1 as source encoding
+    $text = file_get_contents($out);
+    if (!utf8_check($text)) {
+        $text = utf8_encode($text);
+        file_put_contents($out, $text);
+    }
 
 	// add the page to the index
 	$ID = cleanID($id);
