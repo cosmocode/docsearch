@@ -183,5 +183,3 @@ $conf['lockdir']  = $locks;
 
 // walk through the media dir and search for pdf files
 walk($input);
-
-?>
