@@ -19,25 +19,17 @@ class action_plugin_docsearch extends DokuWiki_Action_Plugin {
 	var $data = array();
 
     /**
-	* return some info
-	*/
-    function getInfo() {
-        return confToHash(dirname(__FILE__).'/plugin.info.txt');
-	}
-
-    /**
 	* Register to the content display event to place the results under it.
 	*/
-    function register(&$controller) {
+    function register(Doku_Event_Handler &$controller) {
         $controller->register_hook('TPL_CONTENT_DISPLAY',   'AFTER', $this, 'display', array());
     }
 
 	/**
 	 * do the search and displays the result
 	 */
-	function display(&$event, $param) {
+	function display(Doku_Event &$event, $param) {
 		global $ACT;
-		global $ID;
 		global $conf;
 		global $QUERY;
 		global $lang;

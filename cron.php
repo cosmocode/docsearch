@@ -14,9 +14,9 @@ require_once(DOKU_INC . 'inc/indexer.php');
 require_once(DOKU_INC . 'inc/io.php');
 require_once(DOKU_INC . 'inc/confutils.php');
 /**
- * Walks recrusive throu a directory and reports all files to the inspect function
+ * Walks recursive through a directory and reports all files to the inspect function
  *
- * @param $dir 	the directory to walk throu
+ * @param string $dir the directory to walk through
  */
 function walk($dir) {
 
