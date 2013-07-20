@@ -15,7 +15,6 @@ class action_plugin_docsearch_confmanager extends DokuWiki_Action_Plugin {
 
     private function getDescription() {
         $fn = $this->localFN('confmanager_description');
-        msg($fn);
         if (!@file_exists($fn)) {
             return '';
         }
