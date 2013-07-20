@@ -1,0 +1,16 @@
+The DocSearch plugin allows you to search through your uploaded documents.
+It is integrated into the default DokuWiki search.
+Just fill in a search string and start to search.
+
+DocSearch needs external tools to convert a specific file type to plain text.
+Place the file extension in the Key column and the convert tool in the right.
+When a file with the specific extension is found the according tool will be used.
+
+DocSearch needs to tell the convert tool the path of the file to convert and the target to place the text file.
+This is done via placeholders. %in% is the source file and %out% is the target file.
+The generated text file must be UTF-8.
+
+An example:
+  /usr/bin/pdftotext -enc UTF-8 %in% %out%
+
+For more tips see the [[doku>plugin:docsearch|documentation]].
