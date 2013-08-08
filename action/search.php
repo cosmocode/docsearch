@@ -44,7 +44,7 @@ class action_plugin_docsearch_search extends DokuWiki_Action_Plugin {
         foreach ($data as $id => $hits) {
             $searchResults[$id] = array();
             $searchResults[$id]['hits'] = $hits;
-            if ($runs < $this->getConf('showSnippets')) {
+            if ($runs++ < $this->getConf('showSnippets')) {
                 $searchResults[$id]['snippet'] = ft_snippet($id, $regex);
             }
         }
