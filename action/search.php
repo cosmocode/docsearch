@@ -16,73 +16,73 @@ class action_plugin_docsearch_search extends DokuWiki_Action_Plugin {
         $controller->register_hook('TPL_CONTENT_DISPLAY', 'AFTER', $this, 'display', array());
     }
 
-	function display(Doku_Event &$event, $param) {
-		global $ACT;
-		global $conf;
-		global $QUERY;
-		global $lang;
+    function display(Doku_Event &$event, $param) {
+        global $ACT;
+        global $conf;
+        global $QUERY;
+        global $lang;
 
-		// only work with search
-		if ($ACT !== 'search') return;
+        // only work with search
+        if($ACT !== 'search') return;
 
-		// backup the config array
-		$this->backupConfig = $conf;
+        // backup the config array
+        $this->backupConfig = $conf;
 
-		// change index/pages folder for DocSearch
-		$conf['indexdir'] = $conf['savedir'] . '/docsearch/index';
-		$conf['datadir'] = $conf['savedir'] . '/docsearch/pages';
+        // change index/pages folder for DocSearch
+        $conf['indexdir'] = $conf['savedir'] . '/docsearch/index';
+        $conf['datadir'] = $conf['savedir'] . '/docsearch/pages';
 
-		$data = ft_pageSearch($QUERY, $regex);
+        $data = ft_pageSearch($QUERY, $regex);
 
-		if (empty($data)) {
+        if(empty($data)) {
             $conf = $this->backupConfig;
-			return;
-		}
+            return;
+        }
 
         $searchResults = array();
         $runs = 0;
-        foreach ($data as $id => $hits) {
+        foreach($data as $id => $hits) {
             $searchResults[$id] = array();
             $searchResults[$id]['hits'] = $hits;
-            if ($runs++ < $this->getConf('showSnippets')) {
+            if($runs++ < $this->getConf('showSnippets')) {
                 $searchResults[$id]['snippet'] = ft_snippet($id, $regex);
             }
         }
 
         $conf = $this->backupConfig;
 
-		echo '<h2>'.hsc($this->getLang('title')).'</h2>';
-		echo '<div class="search_result">';
+        echo '<h2>' . hsc($this->getLang('title')) . '</h2>';
+        echo '<div class="search_result">';
 
-		$num = 0;
-		foreach ($searchResults as $id => $data) {
-            if ($this->getConf('showUsage') !== 0) {
+        $num = 0;
+        foreach($searchResults as $id => $data) {
+            if($this->getConf('showUsage') !== 0) {
                 $usages = ft_mediause($id, $this->getConf('showUsage'));
             } else {
                 $usages = array();
             }
 
-			echo '<a href="'.ml($id).'" title="" class="wikilink1">'.hsc($id).'</a>:';
-			echo '<span class="search_cnt">'.hsc($data['hits']).' '.hsc($lang['hits']).'</span>';
-            if (!empty($usages)) {
+            echo '<a href="' . ml($id) . '" title="" class="wikilink1">' . hsc($id) . '</a>:';
+            echo '<span class="search_cnt">' . hsc($data['hits']) . ' ' . hsc($lang['hits']) . '</span>';
+            if(!empty($usages)) {
                 echo '<span class="usage">';
                 echo ', Usage: ';
-                foreach ($usages as $usage) {
+                foreach($usages as $usage) {
                     echo html_wikilink($usage);
                 }
                 echo '</span>';
             }
 
-			if (isset($data['snippet'])) {
-				echo '<div class="search_snippet">';
-				echo $data['snippet'];
-				echo '</div>';
-			}
+            if(isset($data['snippet'])) {
+                echo '<div class="search_snippet">';
+                echo $data['snippet'];
+                echo '</div>';
+            }
 
-			echo '<br />';
-			$num ++;
-		}
+            echo '<br />';
+            $num++;
+        }
 
-		echo '</div>';
-	}
+        echo '</div>';
+    }
 }
