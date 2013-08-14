@@ -4,11 +4,17 @@
 // ensure that the request comes from the cli
 if('cli' != php_sapi_name()) die();
 
-error_reporting(E_ALL);
-if(!defined('DOKU_INC')) define('DOKU_INC', realpath(dirname(__FILE__) . '/../../../') . '/');
+error_reporting(E_ALL & ~E_NOTICE);
 
+// allow setting an animal as first commandline parameter for use in farming
+if(isset($argv[1])) {
+    $_SERVER['animal'] = $argv[1];
+}
+
+if(!defined('DOKU_INC')) define('DOKU_INC', realpath(dirname(__FILE__) . '/../../../') . '/');
 require_once(DOKU_INC . 'inc/init.php');
 require_once DOKU_INC . 'inc/cliopts.php';
+
 
 /**
  * Walks recursive through a directory and reports all files to the inspect function
@@ -72,6 +78,8 @@ function inspect($file) {
     $out = $output . $abstract . '.txt';
     $id = str_replace('/', ':', $abstract);
     io_mkdir_p(dirname($out));
+
+    #echo "indexing: $id\n";
 
     // prepare command
     $cmd = $conf['docsearch'][$extension];
