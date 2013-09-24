@@ -1,0 +1,10 @@
+Das DocSearch-Plugin erlaubt das Durchsuchen von Dateien, die im Medien-Manager gespeichert sind. Das Plugin integriert sich automatisch in die interne DokuWiki-Suchfunktion.
+
+Das Plugin benötigt eine externe Anwendung um die verschiedenen Dateitypen in Textdateien zu konvertieren. Dazu wird in der ersten Spalte der Dateityp eingetragen und rechts daneben das Programm, dass die Umwandlung vornehmen soll.
+
+Das Plugin muss den externen Anwendungen die Quell- und Zieldatei mitteilen. Dazu sind die Platzhalter %in% (Quelldatei) und %out% (Zieldatei) mit anzugeben. Die Zieldatei muss in der Kodierung UTF-8 gespeichert werden.
+
+Beispiel:
+/usr/bin/pdftotext -enc UTF-8 %in% %out%
+
+Weitere Informationen finden Sie unter [[doku>plugin:docsearch|documentation]].
