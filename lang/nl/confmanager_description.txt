@@ -1,0 +1,15 @@
+De DocSearch plugin maakt het mogelijk geüploade documenten te doorzoeken. 
+Het is opgenomen in de standaard Dokuwiki zoekmogelijkheden.
+Geef een zoek opdracht in en begin met zoeken.
+
+DocSearch heeft externe gereedschappen nogig om specifieke bestanden te kunnen converteren naar platte tekst.
+Plaats de bestandsextensie in de Key kolom en het conversie gereedschap in de rechterkolom.
+Wanneer een bestand met een specifieke extensie wordt gevonden dan zal het bijbehorende gereedschap worden gebruikt.
+
+DocSearch zal het pad van het te converteren bestand doorgeven aan het conversie gereedschap en waar het resulterende tekst bestand moet worden opgeslagen. Dit wordt gedaan door plaatshouders. %in% is het bron bestand en %out% is het doelbestand.
+Het tekst bestand moet zijn in UTF-8.
+
+Bijvoorbeeld:
+  /usr/bin/pdftotext -enc UTF-8 %in% %out%
+
+Meer tips zie [[doku>plugin:docsearch|documentation]].
