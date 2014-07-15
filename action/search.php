@@ -12,7 +12,7 @@ class action_plugin_docsearch_search extends DokuWiki_Action_Plugin {
 
     private $backupConfig;
 
-    function register(Doku_Event_Handler &$controller) {
+    function register(Doku_Event_Handler $controller) {
         $controller->register_hook('TPL_CONTENT_DISPLAY', 'AFTER', $this, 'display', array());
     }
 

@@ -2,7 +2,7 @@
 
 class action_plugin_docsearch_confmanager extends DokuWiki_Action_Plugin {
 
-    public function register(&$controller) {
+    public function register(Doku_Event_Handler $controller) {
         $controller->register_hook('CONFMANAGER_CONFIGFILES_REGISTER', 'BEFORE', $this, 'addConfigFile', array());
     }
 
