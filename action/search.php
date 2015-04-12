@@ -69,7 +69,7 @@ class action_plugin_docsearch_search extends DokuWiki_Action_Plugin {
             	$Indexer = idx_get_indexer();
             	$q = ft_queryParser($Indexer, $QUERY);
             	$highlight = $q['highlight'];
-            	$wordList = urlencode(join(" ", $highlight));
+            	$wordList = rawurlencode(join(" ", $highlight));
             	
             	echo '<a href="' . ml($id) . '#search=&quot;' . $wordList . '&quot;" title="" class="wikilink1">' . hsc($id) .'</a>:';
             }
