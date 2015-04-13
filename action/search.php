@@ -62,7 +62,7 @@ class action_plugin_docsearch_search extends DokuWiki_Action_Plugin {
                 $usages = array();
             }
 
-            $isPDF = !strcasecmp(substr($id, -4));
+            $isPDF = !strcasecmp(substr($id, -4), ".pdf");
             if ($isPDF === false) {
                 echo '<a href="' . ml($id) . '" title="" class="wikilink1">' . hsc($id) . '</a>:';
             } else {
