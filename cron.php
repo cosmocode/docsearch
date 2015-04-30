@@ -6,6 +6,12 @@ if('cli' != php_sapi_name()) die();
 
 error_reporting(E_ALL & ~E_NOTICE);
 
+// allow setting incremental or complete rebuild mode
+$incremental = true;
+if(isset($argv[1]) && ($argv[1] == 'incremental' || $argv[1] == 'rebuild')) {
+    $incremental = array_shift($argv) == 'incremental';
+}
+
 // allow setting an animal as first commandline parameter for use in farming
 if(isset($argv[1])) {
     $_SERVER['animal'] = $argv[1];
@@ -17,59 +23,58 @@ require_once DOKU_INC . 'inc/cliopts.php';
 
 
 /**
- * Walks recursive through a directory and reports all files to the inspect function
+ * Remove pseudo wiki page if media file is removed or outdated
  *
- * @param string $dir the folder to walk through
  */
-function walk($dir) {
-
-    if(!is_readable($dir)) return;
-    if(!is_dir($dir)) return;
-
-    $handle = opendir($dir);
-    if(!$handle) return;
-
-    while(false !== ($file = readdir($handle))) {
-        if($file == '.' || $file == '..') continue;
-
-        $file = "$dir/$file";
-        if(is_file($file)) {
-            inspect($file);
-            continue;
-        }
-
-        if(is_dir($file)) {
-            walk($file);
-            continue;
-        }
+function cb_cleanup(&$data, $base, $file, $type, $lvl, $opts) {
+    if($type == 'd') {
+        return true;
     }
+
+    $fullpath_page = $base . $file;
+    $fullpath_media = $opts['mediadir'] . preg_replace('#\.txt$#','',$file);
+
+    //remove if media file is removed or updated
+    if(!file_exists($fullpath_media) || filemtime($fullpath_media) > filemtime($fullpath_page)) {
+        echo 'cleaning up: '.$file."\n";
+        //remove old pseudo page file
+        unlink($fullpath_page);
+
+        //update search index for deleted page -> remove from index
+        $id = pathID($file);
+        idx_addPage($id);
+    }
+
+    return true;
 }
 
 /**
  * Try to convert a given file to text and add it to the DocSearch index
  *
- * @var string $file File to inspect
  */
-function inspect($file) {
-    global $input;
-    global $output;
+function cb_convert(&$data, $base, $file, $type, $lvl, $opts) {
     global $conf;
-    global $ID;
 
-    // dont handle non pdf files
+    if($type == 'd') {
+        return true;
+    }
+    $input = $base;
+    $output = $opts['output'];
+    $file = $base . $file;
+
     $extension = array();
 
     preg_match('/.([^\.]*)$/', $file, $extension);
 
     // no file extension -> woops maybe a TODO ?
     if(!isset($extension[1])) {
-        return;
+        return true;
     }
     $extension = $extension[1];
 
     // unknown extension -> return
     if(!in_array($extension, $conf['docsearchext'])) {
-        return;
+        return true;
     }
 
     // prepare folder and paths
@@ -79,7 +84,11 @@ function inspect($file) {
     $id = str_replace('/', ':', $abstract);
     io_mkdir_p(dirname($out));
 
-    #echo "indexing: $id\n";
+    if(file_exists($out) && filemtime($out) > filemtime($file)) {
+        echo 'skipping: '.$file."\n";
+        return true;
+    }
+    echo 'indexing: '.$file."\n";
 
     // prepare command
     $cmd = $conf['docsearch'][$extension];
@@ -89,7 +98,9 @@ function inspect($file) {
     // Run command
     $exitCode = 0;
     system($cmd, $exitCode);
-    if($exitCode != 0) fwrite(STDERR, "Command failed: $cmd\n");
+    if($exitCode != 0) {
+        fwrite(STDERR, 'Command failed: '.$cmd."\n");
+    }
 
     // check file encoding for bad utf8 characters - if a bad thing is found convert assuming latin1 as source encoding
     $text = file_get_contents($out);
@@ -99,8 +110,9 @@ function inspect($file) {
     }
 
     // add the page to the index
-    $ID = cleanID($id);
-    idx_addPage($ID);
+    $id = cleanID($id);
+    idx_addPage($id);
+    return true;
 }
 
 /**
@@ -140,59 +152,71 @@ function rmdirr($dirname) {
     return rmdir($dirname);
 }
 
-/******************************************************************************
- ********************************** Script ************************************
- ******************************************************************************/
 
-$ID = '';
 
-// load the plugin converter settings.
+function main() {
+    global $conf;
+    global $incremental;
+    $starttime = time();
 
-$converter_conf = DOKU_INC . 'lib/plugins/docsearch/conf/converter.php';
-$conf['docsearch'] = confToHash($converter_conf);
+    // load the plugin converter settings.
+    $converter_conf = DOKU_INC . 'lib/plugins/docsearch/conf/converter.php';
+    $conf['docsearch'] = confToHash($converter_conf);
 
-// no converters == no work ;-)
-if(empty($conf['docsearch'])) {
-    fwrite(STDERR, "No converters found in $converter_conf\n");
-    exit(1);
+    // no converters == no work ;-)
+    if(empty($conf['docsearch'])) {
+        fwrite(STDERR, 'No converters found in '.$converter_conf."\n");
+        exit(1);
+    }
+
+    $conf['docsearchext'] = array_keys($conf['docsearch']);
+
+    // the base "data" dir
+    $base = '';
+    if($conf['savedir'][0] === '.') {
+        $base = DOKU_INC;
+    }
+    $base .= $conf['savedir'] . '/';
+
+    // build the important pathes    
+    $input = $conf['mediadir'];
+    $docsearch__datapath = $base . 'docsearch';    
+    $output = $docsearch__datapath . '/pages';
+    $index = $docsearch__datapath . '/index';
+    $cache = $docsearch__datapath . '/cache';
+    $meta = $docsearch__datapath . '/meta';
+    $locks = $docsearch__datapath . '/locks';
+
+    // cleanup old data
+    if(!$incremental) {
+        rmdirr($docsearch__datapath);
+    }
+    
+    // ensure output dirs exist
+    io_mkdir_p($output);
+    io_mkdir_p($index);
+    io_mkdir_p($cache);
+    io_mkdir_p($meta);
+    io_mkdir_p($locks);
+
+    // change the data folders
+    $conf['datadir'] = $output;
+    $conf['indexdir'] = $index;
+    $conf['cachedir'] = $cache;
+    $conf['metadir'] = $meta;
+    $conf['lockdir'] = $locks;
+
+    @set_time_limit(0);
+    $data = array();
+
+    // cleanup old data (incremental)
+    if($incremental)
+        search($data, $output, 'cb_cleanup', array('mediadir' => $input));
+
+    // walk through the media dir and search for files to convert
+    search($data, $input, 'cb_convert', array('output' => $output));
+    
+    echo 'duration: '.(time() - $starttime)."secs\n";
 }
 
-$conf['docsearchext'] = array_keys($conf['docsearch']);
-
-// build the data pathes
-
-// the base "data" dir
-$base = '';
-
-if($conf['savedir'][0] === '.') {
-    $base = DOKU_INC;
-}
-$base .= $conf['savedir'] . '/';
-
-// cleanup old data
-rmdirr($base . 'docsearch');
-
-// build the important pathes
-$input = $conf['mediadir'];
-$output = $base . 'docsearch/pages';
-$index = $base . 'docsearch/index';
-$cache = $base . 'docsearch/cache';
-$meta = $base . 'docsearch/meta';
-$locks = $base . 'docsearch/locks';
-
-// create output dir
-io_mkdir_p($output);
-io_mkdir_p($index);
-io_mkdir_p($cache);
-io_mkdir_p($meta);
-io_mkdir_p($locks);
-
-// change the data folders
-$conf['datadir'] = $output;
-$conf['indexdir'] = $index;
-$conf['cachedir'] = $cache;
-$conf['metadir'] = $meta;
-$conf['lockdir'] = $locks;
-
-// walk through the media dir and search for pdf files
-walk($input);
+main();
