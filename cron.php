@@ -9,14 +9,14 @@ error_reporting(E_ALL & ~E_NOTICE);
 $incremental = true;
 $verbose = false;
 if(isset($argv[1])) {
-	$index = 1;
-	
-	// allow setting incremental or complete rebuild mode
+    $index = 1;
+
+    // allow setting incremental or complete rebuild mode
     if($argv[1] == 'incremental' || $argv[1] == 'rebuild') {
-	    $incremental = $argv[1] == 'incremental';
-	    $index++;
+        $incremental = $argv[1] == 'incremental';
+        $index++;
     }
-    
+
     // allow setting an animal as first commandline parameter for use in farming
     if(isset($argv[$index])) {
         $_SERVER['animal'] = $argv[$index];
