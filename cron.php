@@ -6,15 +6,21 @@ if('cli' != php_sapi_name()) die();
 
 error_reporting(E_ALL & ~E_NOTICE);
 
-// allow setting incremental or complete rebuild mode
 $incremental = true;
-if(isset($argv[1]) && ($argv[1] == 'incremental' || $argv[1] == 'rebuild')) {
-    $incremental = array_shift($argv) == 'incremental';
-}
-
-// allow setting an animal as first commandline parameter for use in farming
+$verbose = false;
 if(isset($argv[1])) {
-    $_SERVER['animal'] = $argv[1];
+	$index = 1;
+	
+	// allow setting incremental or complete rebuild mode
+    if($argv[1] == 'incremental' || $argv[1] == 'rebuild') {
+	    $incremental = $argv[1] == 'incremental';
+	    $index++;
+    }
+    
+    // allow setting an animal as first commandline parameter for use in farming
+    if(isset($argv[$index])) {
+        $_SERVER['animal'] = $argv[$index];
+    }
 }
 
 if(!defined('DOKU_INC')) define('DOKU_INC', realpath(dirname(__FILE__) . '/../../../') . '/');
@@ -36,7 +42,10 @@ function cb_cleanup(&$data, $base, $file, $type, $lvl, $opts) {
 
     //remove if media file is removed or updated
     if(!file_exists($fullpath_media) || filemtime($fullpath_media) > filemtime($fullpath_page)) {
-        echo 'cleaning up: '.$file."\n";
+        if ($verbose) {
+            echo 'cleaning up: '.$file."\n";
+        }
+        $data['cleaned']++;
         //remove old pseudo page file
         unlink($fullpath_page);
 
@@ -85,10 +94,16 @@ function cb_convert(&$data, $base, $file, $type, $lvl, $opts) {
     io_mkdir_p(dirname($out));
 
     if(file_exists($out) && filemtime($out) > filemtime($file)) {
-        echo 'skipping: '.$file."\n";
+        if ($verbose) {
+            echo 'skipping: '.$file."\n";
+        }
+        $data['skipped']++;
         return true;
     }
-    echo 'indexing: '.$file."\n";
+    if ($verbose) {
+        echo 'indexing: '.$file."\n";
+    }
+    $data['indexed']++;
 
     // prepare command
     $cmd = $conf['docsearch'][$extension];
@@ -207,15 +222,19 @@ function main() {
     $conf['lockdir'] = $locks;
 
     @set_time_limit(0);
-    $data = array();
+    $data = array('cleaned' => 0, 'indexed' => 0, 'skipped' => 0);
 
     // cleanup old data (incremental)
-    if($incremental)
+    if($incremental) {
         search($data, $output, 'cb_cleanup', array('mediadir' => $input));
+    }
 
     // walk through the media dir and search for files to convert
     search($data, $input, 'cb_convert', array('output' => $output));
-    
+
+    echo 'cleaned: '.$data['cleaned']."\n";
+    echo 'skipped: '.$data['skipped']."\n";
+    echo 'indexed: '.$data['indexed']."\n";
     echo 'duration: '.(time() - $starttime)."secs\n";
 }
 
