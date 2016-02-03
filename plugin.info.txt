@@ -1,7 +1,7 @@
 base    docsearch
 author  Dominik Eckelmann
 email   dokuwiki@cosmocode.de
-date    2015-10-05
+date    2016-01-24
 name    Document Search Plugin
 desc    Extends the default search and appends a search through uploaded documents files
 url     http://www.dokuwiki.org/plugin:docsearch
