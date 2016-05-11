@@ -1,0 +1,16 @@
+Le plugin DocSearch vous permet de rechercher parmi vos documents mis en ligne.
+Il est intégré dans la recherche par défaut de DokuWiki.
+Entrez juste quelques caractères et commencez la recherche.
+
+DocSearch a besoin d'outils externes pour convertir certains types spécifiques de fichiers en texte brut.
+Placez l'extension de fichier dans la colonne Clé et l'outil de conversion à droite.
+Lorsqu'un fichier avec l'extension spécifiée est trouvé, l'outil correspondant sera utilisé.
+
+DocSearch a besoin d'indiquer à l'outil de conversion le chemin vers le fichier à convertir et l'endroit ou placer le fichier de texte.
+Ceci est fait grâce à des placeholders. %in% correspond au fichier source, et %out% au fichier cible.
+Le fichier généré doit être au format UTF-8.
+
+Exemple :
+  /usr/bin/pdftotext -enc UTF-8 %in% %out%
+
+Pour plus d'astuces, voir la [[doku>plugin:docsearch|documentation]].
