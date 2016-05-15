@@ -62,7 +62,18 @@ class action_plugin_docsearch_search extends DokuWiki_Action_Plugin {
                 $usages = array();
             }
 
-            echo '<a href="' . ml($id) . '" title="" class="wikilink1">' . hsc($id) . '</a>:';
+            $isPDF = preg_match('/\.pdf$/', $id);
+            if (!$isPDF) {
+                echo '<a href="' . ml($id) . '" title="" class="wikilink1">' . hsc($id) . '</a>:';
+            } else {
+            	$Indexer = idx_get_indexer();
+            	$q = ft_queryParser($Indexer, $QUERY);
+            	$highlight = $q['highlight'];
+            	$wordList = rawurlencode(join(" ", $highlight));
+            	
+            	echo '<a href="' . ml($id) . '#search=&quot;' . $wordList . '&quot;" title="" class="wikilink1">' . hsc($id) .'</a>:';
+            }
+
             echo '<span class="search_cnt">' . hsc($data['hits']) . ' ' . hsc($lang['hits']) . '</span>';
             if(!empty($usages)) {
                 echo '<span class="usage">';
