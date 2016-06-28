@@ -7,3 +7,4 @@
  */
 $lang['title']                 = 'Ergebnisse in Dokumenten';
 $lang['confmanager title']     = 'DocSearch';
+$lang['usage']                 = 'gefunden auf Seite';
