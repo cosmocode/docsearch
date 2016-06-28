@@ -62,11 +62,11 @@ class action_plugin_docsearch_search extends DokuWiki_Action_Plugin {
                 $usages = array();
             }
 
-            echo '<a href="' . ml($id) . '" title="" class="wikilink1">' . hsc($id) . '</a>:';
+            echo '<a href="' . ml($id) . '" title="" class="wikilink1">' . hsc($id) . '</a>: ';
             echo '<span class="search_cnt">' . hsc($data['hits']) . ' ' . hsc($lang['hits']) . '</span>';
             if(!empty($usages)) {
                 echo '<span class="usage">';
-                echo ', Usage: ';
+                echo ', ' . hsc($this->getLang('usage')) . ' ';
                 foreach($usages as $usage) {
                     echo html_wikilink($usage);
                 }
