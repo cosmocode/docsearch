@@ -13,7 +13,7 @@ if(isset($argv[1])) {
 
 if(!defined('DOKU_INC')) define('DOKU_INC', realpath(dirname(__FILE__) . '/../../../') . '/');
 require_once(DOKU_INC . 'inc/init.php');
-require_once DOKU_INC . 'inc/cliopts.php';
+require_once DOKU_INC . 'inc/cli.php';
 
 
 /**
