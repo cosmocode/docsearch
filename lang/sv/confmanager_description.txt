@@ -1,0 +1,16 @@
+Dokumentsökpluginet (DocSearch) låter dig söka i dina uppladdade dokument.
+Det är integerat in i DokuWikis standardsökning.
+Skriv bara in en sökterm och starta din sökning.
+
+Dokumentsök (DocSearch) kräver externa verktyg för att konvertera en specifik filtyp till ren text.
+Placera filändelsen i nyckelkolumnen och konverteringsverktyget i den högra.
+När en fil med en specifik filändelse hittas så används motsvarande konverteringsverktyg.
+
+Dokumentsök (DocSearch) behöver förse konverteringsverktyget med sökvägen till filen som skall konverteras och var textfilen skall placeras.
+Detta görs genom platshållare. %in% är källfilen och %out% är målfilen.
+Den genererade textfilen måste vara UTF-8.
+
+Ett exempel:
+ /usr/bin/pdftotext -enc UTF-8 %in% %out%
+
+För fler tips hänvisas till [[doku>plugin:docsearch|dokumentationen]].
