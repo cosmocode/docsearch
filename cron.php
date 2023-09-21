@@ -91,7 +91,7 @@ function inspect($file) {
 
     // check file encoding for bad utf8 characters - if a bad thing is found convert assuming latin1 as source encoding
     $text = file_get_contents($out);
-    if(!utf8_check($text)) {
+    if(!dokuwiki\Utf8\Clean::isUtf8($text)) {
         $text = utf8_encode($text);
         file_put_contents($out, $text);
     }
