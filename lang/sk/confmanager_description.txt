@@ -1,0 +1,16 @@
+Plugin DocSearch umožňuje prehľadávať nahrané dokumenty.
+Je integrovaný do predvoleného vyhľadávania DokuWiki.
+Stačí zadať hľadaný výraz a spustiť vyhľadávanie.
+
+DocSearch potrebuje externé nástroje na konverziu konkrétneho typu súboru na čistý text.
+Do stĺpca Kľúč zadajte príponu súboru a vpravo konverzný nástroj.
+Keď sa nájde súbor s danou príponou, použije sa príslušný nástroj.
+
+DocSearch musí konverznému nástroju odovzdať cestu konvertovaného súboru a cieľ textového súboru.
+Robí sa to zástupnými symbolmi. %in% je zdrojový súbor a %out% je cieľový súbor.
+Vygenerovaný textový súbor musí byť v UTF-8.
+
+Príklad:
+  /usr/bin/pdftotext -enc UTF-8 %in% %out%
+
+Ďalšie tipy nájdete v [[doku>plugin:docsearch|dokumentácii]].
