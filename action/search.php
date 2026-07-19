@@ -3,6 +3,7 @@
  * Script to search in uploaded pdf documents
  *
  * @author Dominik Eckelmann <eckelmann@cosmocode.de>
+ * @author Giuseppe Di Terlizzi <giuseppe.diterlizzi@gmail.com>
  * @author @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  */
 
@@ -51,8 +52,9 @@ class action_plugin_docsearch_search extends DokuWiki_Action_Plugin {
 
         $conf = $this->backupConfig;
 
-        echo '<h2>' . hsc($this->getLang('title')) . '</h2>';
-        echo '<div class="search_result">';
+        echo '<div class="search_docsearch">';
+        echo '<h2>' . hsc($this->getLang('title')) . ':</h2>';
+        echo '<dl class="search_results">';
 
         $num = 0;
         foreach($searchResults as $id => $data) {
@@ -62,8 +64,8 @@ class action_plugin_docsearch_search extends DokuWiki_Action_Plugin {
                 $usages = array();
             }
 
-            echo '<a href="' . ml($id) . '" title="" class="wikilink1">' . hsc($id) . '</a>: ';
-            echo '<span class="search_cnt">' . hsc($data['hits']) . ' ' . hsc($lang['hits']) . '</span>';
+            echo '<dt><a href="' . ml($id) . '" title="" class="wikilink1">' . hsc($id) . '</a></dt>';
+            echo '<dd class="meta"><span class="hits">' . hsc($data['hits']) . ' ' . hsc($lang['hits']) . '</span>';
             if(!empty($usages)) {
                 echo '<span class="usage">';
                 echo ', ' . hsc($this->getLang('usage')) . ' ';
@@ -73,16 +75,19 @@ class action_plugin_docsearch_search extends DokuWiki_Action_Plugin {
                 echo '</span>';
             }
 
+            echo '</dd>';
+
             if(isset($data['snippet'])) {
-                echo '<div class="search_snippet">';
+                echo '<dd class="snippet">';
                 echo $data['snippet'];
-                echo '</div>';
+                echo '</dd>';
             }
 
             echo '<br />';
             $num++;
         }
 
+        echo '</dl>';
         echo '</div>';
     }
 }
